@@ -9,15 +9,31 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <header>
-            <h1>Tic Tac Toe!</h1>
-        </header>
-        <div class="board"></div>
+        <div id="content">
+            <section>
+                <div class="board"></div>
+                <div class="actions">
+                    <button id="restart">Restart!</button>
+                </div>
+            </section>
+            <section>
+                <p class="message">Messages here!</p>
+                <h2>Score:</h2>
+                <div class="score-board"></div>
+
+            </section>
+        </div>
 
         <script src="main.js"></script>
         <script>
-            TicTacToe.init(document.querySelector('.board'))
-            TicTacToe.draw()
+            const board = document.querySelector('.board')
+            const score = document.querySelector('.score-board')
+            const message = document.querySelector('.message')
+            TicTacToe.init(board, score, message)
+
+            document.querySelector('#restart').onclick = () => { 
+                TicTacToe.restartGame()
+            }
         </script>
     </body>
 </html>

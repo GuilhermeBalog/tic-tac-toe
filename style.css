@@ -1,9 +1,15 @@
-html, body{
-    min-height: 100%;
+html, body, #content{
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    background-color: dodgerblue;
+}
+
+#content{
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
-    flex-direction: column;
+    flex-wrap: wrap-reverse;
     background-color: dodgerblue;
     font-family: sans-serif;
 }
@@ -14,8 +20,8 @@ html, body{
     background-color: floralwhite;
     border: 0.1rem solid black;
     box-sizing: border-box;
-    width: 30rem;
-    height: 30rem;
+    width: 20rem;
+    height: 20rem;
 }
 
 .board > div{
@@ -28,6 +34,69 @@ html, body{
     cursor: pointer;
 }
 
+.no-pointer{
+    cursor: not-allowed !important;
+}
+
+.actions{
+    padding: 0.2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button:focus{
+    outline: none;
+}
+
+button#restart{
+    font-size: 1.25rem;
+    font-family: inherit;
+    background-color: black;
+    color: white;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    border: none;
+    cursor: pointer;
+}
+
 .board > div.winning{
     background-color: cornflowerblue;
+}
+
+.message{
+    text-align: center;
+    font-size: 1.25rem;
+    border: 0.2rem solid black;
+    padding: 1rem 0;
+    background-color: cornflowerblue;
+}
+
+.score-board {
+    display: grid;
+    grid-template-rows: 1fr 2fr;
+    grid-template-columns: repeat(3, 1fr) ;
+    background-color: floralwhite;
+    border: 0.1rem solid black;
+    box-sizing: border-box;
+    width: 20rem;
+    height: 8rem;
+}
+
+.score-board > .score-value{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    border: 0.1rem solid black;
+}
+
+.score-board > .score-label{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    background-color: black;
 }

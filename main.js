@@ -7,12 +7,29 @@ const TicTacToe = {
             this.currentIndex = (this.currentIndex + 1) % this.options.length
         }
     },
-    containerElement: null,
+    boardContainer: null,
+    scoreContainer: null,
+    messageContainer: null,
     gameOver: false,
+    score: {},
 
-    init: function(container){
-        // this.board = ['', '', '', '', '', '', '', '', '']
-        this.containerElement = container
+    init: function(board, score, message){
+        this.boardContainer = board
+        this.scoreContainer = score
+        this.messageContainer = message
+        this.initScore()
+        this.draw()
+    },
+
+    initScore: function(){
+        for(const option of this.player.options){
+            this.score[option] = 0
+        }
+        this.score['Tie'] = 0
+    },
+
+    increasePlayerPoints(player){
+        this.score[player] += 1
     },
 
     makePlay: function(position){
@@ -21,8 +38,9 @@ const TicTacToe = {
             this.board[position] = this.player.options[this.player.currentIndex]
             const { winner, winningSequence} = this.checkWinner()
             if(winner != null){
-                console.log(winner)
+                this.increasePlayerPoints(winner)
                 this.draw()
+                this.message(`<strong>${winner}</strong> wins!`)
                 this.finishGame(winningSequence)
             } else {
                 this.player.changePlayer()
@@ -90,20 +108,53 @@ const TicTacToe = {
     finishGame: function(winnerSequence){
         this.gameOver = true
         for(const i of winnerSequence){
-            const div = this.containerElement.children[i]
+            const div = this.boardContainer.children[i]
             div.classList.add('winning')
+        }
+        for(i in this.board){
+            this.boardContainer.children[i].classList.add('no-pointer')
         }
     },
 
+    restartGame: function(){
+        this.board = ['', '', '', '', '', '', '', '', '']
+        this.gameOver = false
+        this.draw()
+    },
+
+    message: function(message){
+        this.messageContainer.innerHTML = message
+    },
+
     draw: function(){
-        this.containerElement.innerHTML = ''
+        this.boardContainer.innerHTML = ''
         for(const i in this.board){
             const div = document.createElement('div')
             div.onclick = () => {
                 this.makePlay(i)
             }
             div.innerHTML = this.board[i]
-            this.containerElement.appendChild(div)
+            this.boardContainer.appendChild(div)
         }
+
+        this.scoreContainer.innerHTML = ''
+        for(option of Object.keys(this.score)){
+            const label = document.createElement('div')
+            label.classList.add('score-label')
+            label.innerHTML = option
+            console.log
+            this.scoreContainer.appendChild(label)
+        }
+
+        for(option of Object.keys(this.score)){
+            const value = document.createElement('div')
+            value.classList.add('score-value')
+            value.innerHTML = this.score[option]
+
+            this.scoreContainer.appendChild(value)
+        }
+
+        const currentPlayer = this.player.options[this.player.currentIndex]
+        this.message(`Now it's <strong>${currentPlayer}</strong> turn`)
     }
 }
