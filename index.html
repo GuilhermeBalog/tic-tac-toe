@@ -5,10 +5,19 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Tic Tac Toe</title>
+
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <div class="game"></div>
+        <header>
+            <h1>Tic Tac Toe!</h1>
+        </header>
+        <div class="board"></div>
 
         <script src="main.js"></script>
+        <script>
+            TicTacToe.init(document.querySelector('.board'))
+            TicTacToe.draw()
+        </script>
     </body>
 </html>
