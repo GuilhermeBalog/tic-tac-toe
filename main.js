@@ -1,27 +1,35 @@
 const TicTacToe = {
-    board: ['', '', '', '', '', '', '', '', ''],
+    board: [],
     player: {
         options: ['X', 'O'],
         currentIndex: 0,
-        changePlayer: function(){
+        changePlayer(){
             this.currentIndex = (this.currentIndex + 1) % this.options.length
         }
     },
-    boardContainer: null,
-    scoreContainer: null,
-    messageContainer: null,
+
     gameOver: false,
     score: {},
+    containerElement: null,
+    message: 'Welcome to Tic Tac Toe!',
 
-    init: function(board, score, message){
-        this.boardContainer = board
-        this.scoreContainer = score
-        this.messageContainer = message
+    init(container){
+        this.containerElement = container
+        this.initBoard()
         this.initScore()
         this.draw()
     },
 
-    initScore: function(){
+    initBoard(){
+        for(let i = 0; i < 9; i++){
+            this.board[i] = {
+                symbol: '',
+                isPartOfWinningSequence: false 
+            }
+        }
+    },
+
+    initScore(){
         for(const option of this.player.options){
             this.score[option] = 0
         }
@@ -32,16 +40,18 @@ const TicTacToe = {
         this.score[player] += 1
     },
 
-    makePlay: function(position){
+    makePlay(position){
         if(this.gameOver) return false
-        if(this.board[position] === ''){
-            this.board[position] = this.player.options[this.player.currentIndex]
-            const { winner, winningSequence} = this.checkWinner()
+
+        if(this.isEmptySymbol(this.board[position].symbol)){
+            this.board[position].symbol = this.player.options[this.player.currentIndex]
+
+            const { winner, winningSequence } = this.checkWinner()
+            
             if(winner != null){
-                this.increasePlayerPoints(winner)
-                this.draw()
-                this.message(`<strong>${winner}</strong> wins!`)
                 this.finishGame(winningSequence)
+                this.increasePlayerPoints(winner)
+                this.messagePlayer(`<strong>${winner}</strong> wins!`)
             } else {
                 this.player.changePlayer()
                 this.draw()
@@ -49,112 +59,194 @@ const TicTacToe = {
         }
     },
 
-    checkWinner: function(){
-        let winning = { winner: null, winningSequence: [] }
+    checkWinner(){
+        const  winning = { winner: null, winningSequence: [] }
 
         // horizontal
         for(let i = 0; i < 3; i++){
             const index = i * 3
-            if(isEquals(this.board[index], this.board[index + 1], this.board[index + 2])){
+            if(this.isEquals(this.board[index].symbol, this.board[index + 1].symbol, this.board[index + 2].symbol)){
                 winning.winningSequence = [index, index + 1, index + 2]
-                winning.winner = this.board[index]
+                winning.winner = this.board[index].symbol
+
                 return winning
             }
         }
 
         // vertical 
         for(let i = 0; i < 3; i++){
-            if(isEquals(this.board[i], this.board[i + 3], this.board[i + 6])){
+            if(this.isEquals(this.board[i].symbol, this.board[i + 3].symbol, this.board[i + 6].symbol)){
                 winning.winningSequence = [i, i + 3, i + 6]
-                winning.winner = this.board[i]
+                winning.winner = this.board[i].symbol
+
                 return winning
             }
         }
 
         // diagonals
-        if(isEquals(this.board[0], this.board[4], this.board[8])){
+        if(this.isEquals(this.board[0].symbol, this.board[4].symbol, this.board[8].symbol)){
             winning.winningSequence = [0, 4, 8]
-            winning.winner = this.board[0]
+            winning.winner = this.board[0].symbol
+            
             return winning
         }
-        if(isEquals(this.board[2], this.board[4], this.board[6])){
+        if(this.isEquals(this.board[2].symbol, this.board[4].symbol, this.board[6].symbol)){
             winning.winningSequence = [2, 4, 6]
-            winning.winner = this.board[2]
+            winning.winner = this.board[2].symbol
+
             return winning
         }
 
-        if(isBoardFull(this.board) && winning.winner == null){
+        // Tie
+        if(this.isBoardFull() && winning.winner == null){
             winning.winningSequence = [0, 1, 2, 3, 4, 5, 6, 7, 8]
             winning.winner = 'Tie'
+
             return winning
         }
 
         return winning
 
-        function isBoardFull(board){
-            for(i of board){
-                if(i == ''){
-                    return false
-                }
+    },
+
+    isBoardFull() {
+        for (cell of this.board) {
+            if (cell.symbol == '') {
+                return false
             }
-            return true
         }
 
-        function isEquals(a, b, c){
-            return (a == b && b == c && a != '')
-        }
+        return true
     },
 
-    finishGame: function(winnerSequence){
+    isEquals(a, b, c) {
+        return (a == b && b == c && !this.isEmptySymbol(a))
+    },
+
+    isEmptySymbol(symbol){
+        return (symbol == '')
+    },
+
+    finishGame(winnerSequence){
         this.gameOver = true
+
         for(const i of winnerSequence){
-            const div = this.boardContainer.children[i]
-            div.classList.add('winning')
-        }
-        for(i in this.board){
-            this.boardContainer.children[i].classList.add('no-pointer')
+            this.board[i].isPartOfWinningSequence = true
         }
     },
 
-    restartGame: function(){
-        this.board = ['', '', '', '', '', '', '', '', '']
+    restartGame(){
         this.gameOver = false
+        this.initBoard()
         this.draw()
     },
 
-    message: function(message){
-        this.messageContainer.innerHTML = message
+    messagePlayer(message){
+        this.message = message
+        this.draw()
     },
 
-    draw: function(){
-        this.boardContainer.innerHTML = ''
-        for(const i in this.board){
+    draw(){
+        const boardSection = this.createBoardSection()
+        const controlsSection = this.createControlsSection()
+        
+        this.containerElement.innerHTML = ''
+        this.containerElement.appendChild(boardSection)
+        this.containerElement.appendChild(controlsSection)
+    },
+
+    createBoardElement(){
+        const board = document.createElement('div')
+        board.className = 'board'
+
+        if(this.gameOver){
+            board.classList.add('game-over')
+        }
+
+        this.board.forEach((cell, i) => {
             const div = document.createElement('div')
+            div.innerHTML = cell.symbol
+
+            if(cell.isPartOfWinningSequence){
+                div.className = 'winning'
+            }
+
             div.onclick = () => {
                 this.makePlay(i)
             }
-            div.innerHTML = this.board[i]
-            this.boardContainer.appendChild(div)
+
+            board.appendChild(div)
+        })
+
+        return board
+    },
+
+    createActionsElement(){
+        const restartBtn = document.createElement('button')
+        restartBtn.id = 'restart'
+        restartBtn.innerHTML = 'Restart!'
+        restartBtn.onclick = () => {
+            this.restartGame()
         }
 
-        this.scoreContainer.innerHTML = ''
-        for(option of Object.keys(this.score)){
+        const actions = document.createElement('div')
+        actions.className = 'actions'
+        actions.appendChild(restartBtn)
+
+        return actions
+    },
+
+    createBoardSection(){
+        const section = document.createElement('section')
+        section.appendChild(this.createBoardElement())
+        section.appendChild(this.createActionsElement())
+
+        return section
+    },
+
+    createMessageElement(){
+        const p = document.createElement('p')
+        p.className = 'message'
+        p.innerHTML = this.message
+
+        return p
+    },
+
+    createScoreElement(){
+        const scoreBoard = document.createElement('div')
+        scoreBoard.className = 'score-board'
+        
+        for (option of Object.keys(this.score)) {
             const label = document.createElement('div')
             label.classList.add('score-label')
             label.innerHTML = option
-            console.log
-            this.scoreContainer.appendChild(label)
+            scoreBoard.appendChild(label)
         }
-
-        for(option of Object.keys(this.score)){
+        
+        for (option of Object.keys(this.score)) {
             const value = document.createElement('div')
             value.classList.add('score-value')
             value.innerHTML = this.score[option]
-
-            this.scoreContainer.appendChild(value)
+            
+            scoreBoard.appendChild(value)
         }
+        
+        return scoreBoard
+    },
+    
+    createControlsSection(){
+        const messageElement = this.createMessageElement()
 
-        const currentPlayer = this.player.options[this.player.currentIndex]
-        this.message(`Now it's <strong>${currentPlayer}</strong> turn`)
-    }
+        const scoreTitle = document.createElement('h2')
+        scoreTitle.innerHTML = 'Score:'
+
+        const scoreBoard = this.createScoreElement()
+
+        const section = document.createElement('section')
+        section.appendChild(messageElement)
+        section.appendChild(scoreTitle)
+        section.appendChild(scoreBoard)
+
+        return section
+    },
 }

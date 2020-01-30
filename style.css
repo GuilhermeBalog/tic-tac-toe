@@ -34,7 +34,7 @@ html, body, #content{
     cursor: pointer;
 }
 
-.no-pointer{
+.board.game-over > div{
     cursor: not-allowed !important;
 }
 
