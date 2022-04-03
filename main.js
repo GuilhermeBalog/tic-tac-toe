@@ -110,13 +110,7 @@ const TicTacToe = {
     },
 
     isBoardFull() {
-        for (cell of this.board) {
-            if (cell.symbol == '') {
-                return false
-            }
-        }
-
-        return true
+        return this.board.every(cell => cell.symbol != '')
     },
 
     isEquals(a, b, c) {
