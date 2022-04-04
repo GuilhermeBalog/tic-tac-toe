@@ -43,20 +43,22 @@ const TicTacToe = {
     makePlay(position){
         if(this.gameOver) return false
 
-        if(this.isEmptySymbol(this.board[position].symbol)){
-            this.board[position].symbol = this.player.options[this.player.currentIndex]
+        if(!this.isEmptySymbol(this.board[position].symbol)) return false
 
-            const { winner, winningSequence } = this.checkWinner()
-            
-            if(winner != null){
-                this.finishGame(winningSequence)
-                this.increasePlayerPoints(winner)
-                this.messagePlayer(`<strong>${winner}</strong> wins!`)
-            } else {
-                this.player.changePlayer()
-                this.draw()
-            }
+        this.board[position].symbol = this.player.options[this.player.currentIndex]
+
+        const { winner, winningSequence } = this.checkWinner()
+
+        if(winner != null){
+            this.finishGame(winningSequence)
+            this.increasePlayerPoints(winner)
+            this.messagePlayer(`<strong>${winner}</strong> wins!`)
+        } else {
+            this.player.changePlayer()
+            this.draw()
         }
+
+        return true
     },
 
     checkWinner(){
