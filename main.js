@@ -17,6 +17,7 @@ const TicTacToe = {
         this.containerElement = container
         this.initBoard()
         this.initScore()
+        this.makeMachinePlay()
         this.draw()
     },
 
@@ -24,7 +25,7 @@ const TicTacToe = {
         for(let i = 0; i < 9; i++){
             this.board[i] = {
                 symbol: '',
-                isPartOfWinningSequence: false 
+                isPartOfWinningSequence: false
             }
         }
     },
@@ -61,6 +62,68 @@ const TicTacToe = {
         return true
     },
 
+    makeMachinePlay(){
+        let bestScore = -Infinity
+        let bestPlaceToMark
+
+        const machinePlayerIndex = this.player.currentIndex
+        const opponentIndex = (machinePlayerIndex + 1) % this.player.options.length
+
+        const scores = {
+            [this.player.options[machinePlayerIndex]]: 1, // X or O
+            [this.player.options[opponentIndex]]: -1,     // O or X
+            'Tie': 0,
+        }
+
+        this.board.forEach((item, index) => {
+            if(!this.isEmptySymbol(item.symbol)){
+                return
+            }
+
+            item.symbol = this.player.options[machinePlayerIndex]
+            const score = this.minimax({ minimaxScore: scores })
+            item.symbol = ''
+
+            // resets the current player because minimax() changes the player 'n' times
+            this.player.currentIndex = machinePlayerIndex
+
+            if(score > bestScore){
+                bestScore = score
+                bestPlaceToMark = index
+            }
+        })
+
+        this.makePlay(bestPlaceToMark)
+    },
+
+    minimax({ depth = 0, isMaximizing = false, minimaxScore }){
+        const { winner } = this.checkWinner()
+        if(winner !== null) {return minimaxScore[winner]}
+
+        let bestScore = isMaximizing ? -Infinity : Infinity
+        this.board.forEach(item => {
+            if(!this.isEmptySymbol(item.symbol)) return
+
+            this.player.changePlayer()
+
+            item.symbol = this.player.options[this.player.currentIndex]
+            let score = this.minimax({
+                depth: depth + 1,
+                isMaximizing: !isMaximizing,
+                minimaxScore
+            })
+            item.symbol = ''
+
+            bestScore = isMaximizing ? Math.max(score, bestScore) : Math.min(score, bestScore)
+        })
+
+        return bestScore;
+    },
+
+    randomInt(min, max){
+        return Math.floor(Math.random() * (max - min)) + min;
+    },
+
     checkWinner(){
         const  winning = { winner: null, winningSequence: [] }
 
@@ -75,7 +138,7 @@ const TicTacToe = {
             }
         }
 
-        // vertical 
+        // vertical
         for(let i = 0; i < 3; i++){
             if(this.isEquals(this.board[i].symbol, this.board[i + 3].symbol, this.board[i + 6].symbol)){
                 winning.winningSequence = [i, i + 3, i + 6]
@@ -89,7 +152,7 @@ const TicTacToe = {
         if(this.isEquals(this.board[0].symbol, this.board[4].symbol, this.board[8].symbol)){
             winning.winningSequence = [0, 4, 8]
             winning.winner = this.board[0].symbol
-            
+
             return winning
         }
         if(this.isEquals(this.board[2].symbol, this.board[4].symbol, this.board[6].symbol)){
@@ -133,7 +196,9 @@ const TicTacToe = {
 
     restartGame(){
         this.gameOver = false
+        this.player.currentIndex = 0
         this.initBoard()
+        this.makeMachinePlay()
         this.draw()
     },
 
@@ -145,7 +210,7 @@ const TicTacToe = {
     draw(){
         const boardSection = this.createBoardSection()
         const controlsSection = this.createControlsSection()
-        
+
         this.containerElement.innerHTML = ''
         this.containerElement.appendChild(boardSection)
         this.containerElement.appendChild(controlsSection)
@@ -169,6 +234,7 @@ const TicTacToe = {
 
             div.onclick = () => {
                 this.makePlay(i)
+                setTimeout(() => { this.makeMachinePlay() }, 500)
             }
 
             board.appendChild(div)
@@ -211,25 +277,25 @@ const TicTacToe = {
     createScoreElement(){
         const scoreBoard = document.createElement('div')
         scoreBoard.className = 'score-board'
-        
+
         for (option of Object.keys(this.score)) {
             const label = document.createElement('div')
             label.classList.add('score-label')
             label.innerHTML = option
             scoreBoard.appendChild(label)
         }
-        
+
         for (option of Object.keys(this.score)) {
             const value = document.createElement('div')
             value.classList.add('score-value')
             value.innerHTML = this.score[option]
-            
+
             scoreBoard.appendChild(value)
         }
-        
+
         return scoreBoard
     },
-    
+
     createControlsSection(){
         const messageElement = this.createMessageElement()
 
