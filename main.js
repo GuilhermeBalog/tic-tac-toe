@@ -226,15 +226,19 @@ const TicTacToe = {
 
         this.board.forEach((cell, i) => {
             const div = document.createElement('div')
-            div.innerHTML = cell.symbol
+            if(cell.symbol) {
+                div.appendChild(icon(cell.symbol))
+            }
 
             if(cell.isPartOfWinningSequence){
                 div.className = 'winning'
             }
 
-            div.onclick = () => {
-                this.makePlay(i)
-                setTimeout(() => { this.makeMachinePlay() }, 500)
+            if(!cell.symbol) {
+                div.addEventListener('click', () => {
+                    this.makePlay(i)
+                    setTimeout(() => this.makeMachinePlay(), 700)
+                });
             }
 
             board.appendChild(div)
@@ -251,11 +255,7 @@ const TicTacToe = {
             this.restartGame()
         }
 
-        const actions = document.createElement('div')
-        actions.className = 'actions'
-        actions.appendChild(restartBtn)
-
-        return actions
+        return restartBtn
     },
 
     createBoardSection(){
@@ -274,41 +274,76 @@ const TicTacToe = {
         return p
     },
 
-    createScoreElement(){
-        const scoreBoard = document.createElement('div')
-        scoreBoard.className = 'score-board'
-
-        for (option of Object.keys(this.score)) {
-            const label = document.createElement('div')
-            label.classList.add('score-label')
-            label.innerHTML = option
-            scoreBoard.appendChild(label)
-        }
-
-        for (option of Object.keys(this.score)) {
-            const value = document.createElement('div')
-            value.classList.add('score-value')
-            value.innerHTML = this.score[option]
-
-            scoreBoard.appendChild(value)
-        }
-
-        return scoreBoard
-    },
-
     createControlsSection(){
-        const messageElement = this.createMessageElement()
+        const table = el('table');
+        table.classList.add('score-table')
 
-        const scoreTitle = document.createElement('h2')
-        scoreTitle.innerHTML = 'Score:'
+        table.appendChild(this.createScoreTitle());
+        table.appendChild(this.createScoreLabelRow());
+        table.appendChild(this.createScoreValueRow());
 
-        const scoreBoard = this.createScoreElement()
+        const section = el('section');
 
-        const section = document.createElement('section')
-        section.appendChild(messageElement)
-        section.appendChild(scoreTitle)
-        section.appendChild(scoreBoard)
+        section.appendChild(this.createMessageElement());
+        section.appendChild(table);
 
-        return section
+        return section;
     },
+
+    createScoreTitle() {
+        const tableTitle = el('th');
+
+        tableTitle.colSpan = Object.keys(this.score).length;
+        tableTitle.appendChild(text('SCORE'));
+
+        return row(tableTitle);
+    },
+
+    createScoreLabelRow(){
+        const labelCells = Object.keys(this.score).map(label => {
+            const cell = el('th');
+            const content = icon(label);
+            cell.appendChild(content);
+
+            return cell;
+        });
+
+        return row(...labelCells);
+    },
+
+    createScoreValueRow() {
+        const scoreCells = Object.values(this.score).map(scoreValue => {
+            const cell = el('td');
+            const content = text(scoreValue);
+            cell.appendChild(content);
+
+            return cell;
+        });
+
+        return row(...scoreCells);
+    },
+}
+
+function el(tagName) {
+    return document.createElement(tagName);
+}
+
+function text(textContent) {
+    return document.createTextNode(textContent);
+}
+
+function row(...cells) {
+    const rowEl = document.createElement('tr');
+    cells.forEach(cell => {
+        rowEl.appendChild(cell);
+    });
+    return rowEl;
+}
+
+function icon(player) {
+    const imgEl = el('img');
+    imgEl.src = `./${player}.svg`;
+    imgEl.width = 45;
+    imgEl.height = 45;
+    return imgEl
 }
